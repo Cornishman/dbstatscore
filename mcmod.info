@@ -1,0 +1,20 @@
+[
+    {
+    "modid": "DbStatsCore",
+    "name": "DbStatsCore",
+    "description": "",
+    "version": "0.0.1",
+    "mcversion": "1.6.4",
+    "url": "",
+    "updateUrl": "",
+    "authors": [ "wattzy" ],
+    "credits": "Authored by wattzy",
+    "logoFile": "",
+    "screenshots": [ ],
+    "parent": "DbStats",
+    "requiredMods": [ "Forge" ],
+    "dependencies": [ ],
+    "dependants": [ "" ],
+    "useDependencyInformation": "false"
+    }
+]
