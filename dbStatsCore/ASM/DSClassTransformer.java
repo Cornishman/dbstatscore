@@ -152,193 +152,157 @@ public class DSClassTransformer implements IClassTransformer {
 		ClassReader classReader = new ClassReader(bytes);
 		classReader.accept(classNode, 0);
 
-		Iterator<MethodNode> methods = classNode.methods.iterator();
+        for (MethodNode m : classNode.methods) {
+            if ((m.name.equals(GetObfuscationValue("SlotClick", obfuscated))) && (m.desc.equals("(IIIL" + GetObfuscationValue("EntityPlayerJavaClass", obfuscated)
+                    + ";)L" + GetObfuscationValue("ItemStackJavaClass", obfuscated) + ";"))) {
 
-		while (methods.hasNext()) {
-			MethodNode m = (MethodNode) methods.next();
-			
-			if ((m.name.equals(GetObfuscationValue("SlotClick", obfuscated))) && (m.desc.equals("(IIIL" + GetObfuscationValue("EntityPlayerJavaClass", obfuscated) 
-					+ ";)L" + GetObfuscationValue("ItemStackJavaClass", obfuscated) + ";"))) {
-				
-				int offsetClickEmptyHand = -1;
-				int offsetClickHeldItem = -1;
-				
-				int offset = 0;
-				for (offset = 0; offset < m.instructions.size(); offset++)
-				{
-					if (m.instructions.get(offset).getOpcode() == Opcodes.ALOAD && ((VarInsnNode)m.instructions.get(offset)).var == 7)
-					{
-						if (m.instructions.get(offset + 1).getOpcode() == 198)
-						{
-							if (m.instructions.get(offset + 2).getOpcode() == Opcodes.ALOAD && ((VarInsnNode)m.instructions.get(offset + 2)).var == 7)
-							{
-								if (m.instructions.get(offset + 3).getOpcode() == Opcodes.ALOAD && ((VarInsnNode)m.instructions.get(offset + 3)).var == 4)
-								{
-									if (m.instructions.get(offset + 4).getOpcode() == Opcodes.INVOKEVIRTUAL && ((MethodInsnNode)m.instructions.get(offset + 4)).name.equals(GetObfuscationValue("CanTakeStack", obfuscated)))
-									{
-										if (m.instructions.get(offset + 5).getOpcode() == Opcodes.IFEQ)
-										{
-											System.out.println("[DbStatsCore] Patching 1");
-											InsnList toInject = new InsnList();
-											toInject.add(new VarInsnNode(25, 7));	//ALOAD 7 -> Slot2
-											toInject.add(new VarInsnNode(25, 4));	//ALOAD 4 -> par4EntityPlayer
-											toInject.add(new VarInsnNode(25, 0));	//ALOAD 0 -> this (container)
-											toInject.add(new FieldInsnNode(180, GetObfuscationValue("ContainerJavaClass", obfuscated), GetObfuscationValue("InventoryItemStacksField", obfuscated),
-													"Ljava/util/List;"));	//(GETFIELD, "net/minecraft/inventory/Container", "inventoryItemStacks", "Ljava/util/List;");
-											toInject.add(new VarInsnNode(21, 1));	//Iload 1 -> par1
-											toInject.add(new MethodInsnNode(185, "java/util/List", "get", "(I)Ljava/lang/Object;"));	//INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;");
-											toInject.add(new TypeInsnNode(192, GetObfuscationValue("ItemStackJavaClass", obfuscated)));	//mv.visitTypeInsn(CHECKCAST, "net/minecraft/item/ItemStack");
-											toInject.add(new MethodInsnNode(184, "dbStatsCore/ASM/DbStatsEventFactory", "onPickupFromSlot", "(L" + GetObfuscationValue("SlotJavaClass", obfuscated) 
-													+ ";L" + GetObfuscationValue("EntityPlayerJavaClass", obfuscated) + ";L" + GetObfuscationValue("ItemStackJavaClass", obfuscated) + ";)Z"));
-											toInject.add(new InsnNode(87));	//Pop stack
-											
-											m.instructions.insert(m.instructions.get(offset + 5), toInject);
-										}
-									}
-								}
-							}
-						}
-					}
-					else if (m.instructions.get(offset).getOpcode() == Opcodes.GETFIELD && ((FieldInsnNode)m.instructions.get(offset)).name.equals(GetObfuscationValue("StackSizeField", obfuscated)))	//GetField
-					{
-						if (m.instructions.get(offset + 1).getOpcode() == Opcodes.ICONST_1)	//ICONST_1
-						{
-							if (m.instructions.get(offset + 2).getOpcode() == Opcodes.IADD)	//IADD
-							{
-								if (m.instructions.get(offset + 3).getOpcode() == Opcodes.ICONST_2)	//ICONST_2
-								{
-									if (m.instructions.get(offset + 4).getOpcode() == Opcodes.IDIV)	//IDIV
-									{
-										if (m.instructions.get(offset + 7).getOpcode() == Opcodes.ISTORE)	//ISTORE (skip label and f_same1 *+7)
-										{
-											for (offsetClickEmptyHand = offset + 7; offsetClickEmptyHand < m.instructions.size(); offsetClickEmptyHand++)
-											{
-												if (m.instructions.get(offsetClickEmptyHand).getOpcode() == Opcodes.ALOAD)
-												{
-													offsetClickEmptyHand++;
-													if (m.instructions.get(offsetClickEmptyHand).getOpcode() == Opcodes.ALOAD)
-													{
-														offsetClickEmptyHand++;
-														if (m.instructions.get(offsetClickEmptyHand).getOpcode() == Opcodes.ALOAD)
-														{
-															offsetClickEmptyHand++;
-															if (m.instructions.get(offsetClickEmptyHand).getOpcode() == Opcodes.INVOKEVIRTUAL 
-																	&& ((MethodInsnNode)m.instructions.get(offsetClickEmptyHand)).name.equals(GetObfuscationValue("GetItemStack", obfuscated)))
-															{
-																offsetClickEmptyHand++;
-																if (m.instructions.get(offsetClickEmptyHand).getOpcode() == Opcodes.INVOKEVIRTUAL
-																		&& ((MethodInsnNode)m.instructions.get(offsetClickEmptyHand)).name.equals(GetObfuscationValue("OnPickupFromSlot", obfuscated)))
-																{
-																	System.out.println("[DbStatsCore] Patching 2");
-																	InsnList toInject = new InsnList();
-																	toInject.add(new VarInsnNode(25, 7));	//ALOAD 7 -> Slot2
-																	toInject.add(new VarInsnNode(25, 4));	//ALOAD 4 -> par4EntityPlayer
-																	toInject.add(new VarInsnNode(25, 0));	//ALOAD 0 -> this (container)
-																	toInject.add(new FieldInsnNode(180, GetObfuscationValue("ContainerJavaClass", obfuscated), GetObfuscationValue("InventoryItemStacksField", obfuscated),
-																			"Ljava/util/List;"));	//(GETFIELD, "net/minecraft/inventory/Container", "inventoryItemStacks", "Ljava/util/List;");
-																	toInject.add(new VarInsnNode(21, 1));	//Iload 1 -> par1
-																	toInject.add(new MethodInsnNode(185, "java/util/List", "get", "(I)Ljava/lang/Object;"));	//INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;");
-																	toInject.add(new TypeInsnNode(192, GetObfuscationValue("ItemStackJavaClass", obfuscated)));	//mv.visitTypeInsn(CHECKCAST, "net/minecraft/item/ItemStack");
-																	toInject.add(new MethodInsnNode(184, "dbStatsCore/ASM/DbStatsEventFactory", "onPickupFromSlot", "(L" + GetObfuscationValue("SlotJavaClass", obfuscated) 
-																			+ ";L" + GetObfuscationValue("EntityPlayerJavaClass", obfuscated) + ";L" + GetObfuscationValue("ItemStackJavaClass", obfuscated) + ";)Z"));
-																	toInject.add(new InsnNode(87));	//Pop stack
-																	
-																	m.instructions.insert(m.instructions.get(offsetClickEmptyHand), toInject);
-																	break;
-																}
-															}
-														}
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-					else if (m.instructions.get(offset).getOpcode() == Opcodes.ALOAD)
-					{
-						if (m.instructions.get(offset + 1).getOpcode() == Opcodes.GETFIELD && ((FieldInsnNode)m.instructions.get(offset + 1)).name.equals(GetObfuscationValue("ItemIdField", obfuscated)))
-						{
+                int offsetClickEmptyHand;
+                int offsetClickHeldItem;
+
+                int offset;
+                for (offset = 0; offset < m.instructions.size(); offset++) {
+                    if (m.instructions.get(offset).getOpcode() == Opcodes.ALOAD && ((VarInsnNode) m.instructions.get(offset)).var == 7) {
+                        if (m.instructions.get(offset + 1).getOpcode() == 198) {
+                            if (m.instructions.get(offset + 2).getOpcode() == Opcodes.ALOAD && ((VarInsnNode) m.instructions.get(offset + 2)).var == 7) {
+                                if (m.instructions.get(offset + 3).getOpcode() == Opcodes.ALOAD && ((VarInsnNode) m.instructions.get(offset + 3)).var == 4) {
+                                    if (m.instructions.get(offset + 4).getOpcode() == Opcodes.INVOKEVIRTUAL && ((MethodInsnNode) m.instructions.get(offset + 4)).name.equals(GetObfuscationValue("CanTakeStack", obfuscated))) {
+                                        if (m.instructions.get(offset + 5).getOpcode() == Opcodes.IFEQ) {
+                                            System.out.println("[DbStatsCore] Patching 1");
+                                            InsnList toInject = new InsnList();
+                                            toInject.add(new VarInsnNode(25, 7));    //ALOAD 7 -> Slot2
+                                            toInject.add(new VarInsnNode(25, 4));    //ALOAD 4 -> par4EntityPlayer
+                                            toInject.add(new VarInsnNode(25, 0));    //ALOAD 0 -> this (container)
+                                            toInject.add(new FieldInsnNode(180, GetObfuscationValue("ContainerJavaClass", obfuscated), GetObfuscationValue("InventoryItemStacksField", obfuscated),
+                                                    "Ljava/util/List;"));    //(GETFIELD, "net/minecraft/inventory/Container", "inventoryItemStacks", "Ljava/util/List;");
+                                            toInject.add(new VarInsnNode(21, 1));    //Iload 1 -> par1
+                                            toInject.add(new MethodInsnNode(185, "java/util/List", "get", "(I)Ljava/lang/Object;"));    //INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;");
+                                            toInject.add(new TypeInsnNode(192, GetObfuscationValue("ItemStackJavaClass", obfuscated)));    //mv.visitTypeInsn(CHECKCAST, "net/minecraft/item/ItemStack");
+                                            toInject.add(new MethodInsnNode(184, "dbStatsCore/ASM/DbStatsEventFactory", "onPickupFromSlot", "(L" + GetObfuscationValue("SlotJavaClass", obfuscated)
+                                                    + ";L" + GetObfuscationValue("EntityPlayerJavaClass", obfuscated) + ";L" + GetObfuscationValue("ItemStackJavaClass", obfuscated) + ";)Z"));
+                                            toInject.add(new InsnNode(87));    //Pop stack
+
+                                            m.instructions.insert(m.instructions.get(offset + 5), toInject);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else if (m.instructions.get(offset).getOpcode() == Opcodes.GETFIELD && ((FieldInsnNode) m.instructions.get(offset)).name.equals(GetObfuscationValue("StackSizeField", obfuscated)))    //GetField
+                    {
+                        if (m.instructions.get(offset + 1).getOpcode() == Opcodes.ICONST_1)    //ICONST_1
+                        {
+                            if (m.instructions.get(offset + 2).getOpcode() == Opcodes.IADD)    //IADD
+                            {
+                                if (m.instructions.get(offset + 3).getOpcode() == Opcodes.ICONST_2)    //ICONST_2
+                                {
+                                    if (m.instructions.get(offset + 4).getOpcode() == Opcodes.IDIV)    //IDIV
+                                    {
+                                        if (m.instructions.get(offset + 7).getOpcode() == Opcodes.ISTORE)    //ISTORE (skip label and f_same1 *+7)
+                                        {
+                                            for (offsetClickEmptyHand = offset + 7; offsetClickEmptyHand < m.instructions.size(); offsetClickEmptyHand++) {
+                                                if (m.instructions.get(offsetClickEmptyHand).getOpcode() == Opcodes.ALOAD) {
+                                                    offsetClickEmptyHand++;
+                                                    if (m.instructions.get(offsetClickEmptyHand).getOpcode() == Opcodes.ALOAD) {
+                                                        offsetClickEmptyHand++;
+                                                        if (m.instructions.get(offsetClickEmptyHand).getOpcode() == Opcodes.ALOAD) {
+                                                            offsetClickEmptyHand++;
+                                                            if (m.instructions.get(offsetClickEmptyHand).getOpcode() == Opcodes.INVOKEVIRTUAL
+                                                                    && ((MethodInsnNode) m.instructions.get(offsetClickEmptyHand)).name.equals(GetObfuscationValue("GetItemStack", obfuscated))) {
+                                                                offsetClickEmptyHand++;
+                                                                if (m.instructions.get(offsetClickEmptyHand).getOpcode() == Opcodes.INVOKEVIRTUAL
+                                                                        && ((MethodInsnNode) m.instructions.get(offsetClickEmptyHand)).name.equals(GetObfuscationValue("OnPickupFromSlot", obfuscated))) {
+                                                                    System.out.println("[DbStatsCore] Patching 2");
+                                                                    InsnList toInject = new InsnList();
+                                                                    toInject.add(new VarInsnNode(25, 7));    //ALOAD 7 -> Slot2
+                                                                    toInject.add(new VarInsnNode(25, 4));    //ALOAD 4 -> par4EntityPlayer
+                                                                    toInject.add(new VarInsnNode(25, 0));    //ALOAD 0 -> this (container)
+                                                                    toInject.add(new FieldInsnNode(180, GetObfuscationValue("ContainerJavaClass", obfuscated), GetObfuscationValue("InventoryItemStacksField", obfuscated),
+                                                                            "Ljava/util/List;"));    //(GETFIELD, "net/minecraft/inventory/Container", "inventoryItemStacks", "Ljava/util/List;");
+                                                                    toInject.add(new VarInsnNode(21, 1));    //Iload 1 -> par1
+                                                                    toInject.add(new MethodInsnNode(185, "java/util/List", "get", "(I)Ljava/lang/Object;"));    //INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;");
+                                                                    toInject.add(new TypeInsnNode(192, GetObfuscationValue("ItemStackJavaClass", obfuscated)));    //mv.visitTypeInsn(CHECKCAST, "net/minecraft/item/ItemStack");
+                                                                    toInject.add(new MethodInsnNode(184, "dbStatsCore/ASM/DbStatsEventFactory", "onPickupFromSlot", "(L" + GetObfuscationValue("SlotJavaClass", obfuscated)
+                                                                            + ";L" + GetObfuscationValue("EntityPlayerJavaClass", obfuscated) + ";L" + GetObfuscationValue("ItemStackJavaClass", obfuscated) + ";)Z"));
+                                                                    toInject.add(new InsnNode(87));    //Pop stack
+
+                                                                    m.instructions.insert(m.instructions.get(offsetClickEmptyHand), toInject);
+                                                                    break;
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else if (m.instructions.get(offset).getOpcode() == Opcodes.ALOAD) {
+                        if (m.instructions.get(offset + 1).getOpcode() == Opcodes.GETFIELD && ((FieldInsnNode) m.instructions.get(offset + 1)).name.equals(GetObfuscationValue("ItemIdField", obfuscated))) {
 //							System.out.println("[DbStatsCore] Patching 3.1");
-							if (m.instructions.get(offset + 2).getOpcode() == Opcodes.ALOAD)
-							{
-								if (m.instructions.get(offset + 3).getOpcode() == Opcodes.GETFIELD && ((FieldInsnNode)m.instructions.get(offset + 3)).name.equals(GetObfuscationValue("ItemIdField", obfuscated)))
-								{
+                            if (m.instructions.get(offset + 2).getOpcode() == Opcodes.ALOAD) {
+                                if (m.instructions.get(offset + 3).getOpcode() == Opcodes.GETFIELD && ((FieldInsnNode) m.instructions.get(offset + 3)).name.equals(GetObfuscationValue("ItemIdField", obfuscated))) {
 //									System.out.println("[DbStatsCore] Patching 3.2");
-									if (m.instructions.get(offset + 4).getOpcode() == Opcodes.IF_ICMPNE)
-									{
-										if (m.instructions.get(offset + 5).getOpcode() == Opcodes.ALOAD)
-										{
-											if (m.instructions.get(offset + 6).getOpcode() == Opcodes.INVOKEVIRTUAL && ((MethodInsnNode)m.instructions.get(offset + 6)).name.equals(GetObfuscationValue("GetMaxStackSize", obfuscated)))
-											{
+                                    if (m.instructions.get(offset + 4).getOpcode() == Opcodes.IF_ICMPNE) {
+                                        if (m.instructions.get(offset + 5).getOpcode() == Opcodes.ALOAD) {
+                                            if (m.instructions.get(offset + 6).getOpcode() == Opcodes.INVOKEVIRTUAL && ((MethodInsnNode) m.instructions.get(offset + 6)).name.equals(GetObfuscationValue("GetMaxStackSize", obfuscated))) {
 //												System.out.println("[DbStatsCore] Patching 3.3");
-												if (m.instructions.get(offset + 7).getOpcode() == Opcodes.ICONST_1)
-												{
-													if (m.instructions.get(offset + 8).getOpcode() == Opcodes.IF_ICMPLE)
-													{
-														if (m.instructions.get(offset + 9).getOpcode() == Opcodes.ALOAD)
-														{
-															if (m.instructions.get(offset + 10).getOpcode() == Opcodes.INVOKEVIRTUAL && ((MethodInsnNode)m.instructions.get(offset + 10)).name.equals(GetObfuscationValue("GetHasSubtypes", obfuscated)))
-															{
+                                                if (m.instructions.get(offset + 7).getOpcode() == Opcodes.ICONST_1) {
+                                                    if (m.instructions.get(offset + 8).getOpcode() == Opcodes.IF_ICMPLE) {
+                                                        if (m.instructions.get(offset + 9).getOpcode() == Opcodes.ALOAD) {
+                                                            if (m.instructions.get(offset + 10).getOpcode() == Opcodes.INVOKEVIRTUAL && ((MethodInsnNode) m.instructions.get(offset + 10)).name.equals(GetObfuscationValue("GetHasSubtypes", obfuscated))) {
 //																System.out.println("[DbStatsCore] Patching 3.4");
-																//Find onPickupFromSlot
-																for (offsetClickHeldItem = offset + 10; offsetClickHeldItem < m.instructions.size(); offsetClickHeldItem++)
-																{
-																	if (m.instructions.get(offsetClickHeldItem).getOpcode() == Opcodes.ALOAD)
-																	{
-																		offsetClickHeldItem++;
-																		if (m.instructions.get(offsetClickHeldItem).getOpcode() == Opcodes.ALOAD)
-																		{
-																			offsetClickHeldItem++;
-																			if (m.instructions.get(offsetClickHeldItem).getOpcode() == Opcodes.ALOAD)
-																			{
-																				offsetClickHeldItem++;
-																				if (m.instructions.get(offsetClickHeldItem).getOpcode() == Opcodes.INVOKEVIRTUAL 
-																						&& ((MethodInsnNode)m.instructions.get(offsetClickHeldItem)).name.equals(GetObfuscationValue("GetItemStack", obfuscated)))
-																				{
-																					offsetClickHeldItem++;
-																					if (m.instructions.get(offsetClickHeldItem).getOpcode() == Opcodes.INVOKEVIRTUAL
-																							&& ((MethodInsnNode)m.instructions.get(offsetClickHeldItem)).name.equals(GetObfuscationValue("OnPickupFromSlot", obfuscated)))
-																					{
-																						System.out.println("[DbStatsCore] Patching 3");
-																						InsnList toInject = new InsnList();
-																						toInject.add(new VarInsnNode(25, 7));	//ALOAD 7 -> Slot2
-																						toInject.add(new VarInsnNode(25, 4));	//ALOAD 4 -> par4EntityPlayer
-																						toInject.add(new VarInsnNode(25, 0));	//ALOAD 0 -> this (container)
-																						toInject.add(new FieldInsnNode(180, GetObfuscationValue("ContainerJavaClass", obfuscated), GetObfuscationValue("InventoryItemStacksField", obfuscated),
-																								"Ljava/util/List;"));	//(GETFIELD, "net/minecraft/inventory/Container", "inventoryItemStacks", "Ljava/util/List;");
-																						toInject.add(new VarInsnNode(21, 1));	//Iload 1 -> par1
-																						toInject.add(new MethodInsnNode(185, "java/util/List", "get", "(I)Ljava/lang/Object;"));	//INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;");
-																						toInject.add(new TypeInsnNode(192, GetObfuscationValue("ItemStackJavaClass", obfuscated)));	//mv.visitTypeInsn(CHECKCAST, "net/minecraft/item/ItemStack");
-																						toInject.add(new MethodInsnNode(184, "dbStatsCore/ASM/DbStatsEventFactory", "onPickupFromSlot", "(L" + GetObfuscationValue("SlotJavaClass", obfuscated) 
-																								+ ";L" + GetObfuscationValue("EntityPlayerJavaClass", obfuscated) + ";L" + GetObfuscationValue("ItemStackJavaClass", obfuscated) + ";)Z"));
-																						toInject.add(new InsnNode(87));	//Pop stack
-																						
-																						m.instructions.insert(m.instructions.get(offsetClickHeldItem), toInject);
-																						break;
-																					}
-																				}
-																			}
-																		}
-																	}
-																}
-															}
-														}
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-				break;
-			}
-		}
+                                                                //Find onPickupFromSlot
+                                                                for (offsetClickHeldItem = offset + 10; offsetClickHeldItem < m.instructions.size(); offsetClickHeldItem++) {
+                                                                    if (m.instructions.get(offsetClickHeldItem).getOpcode() == Opcodes.ALOAD) {
+                                                                        offsetClickHeldItem++;
+                                                                        if (m.instructions.get(offsetClickHeldItem).getOpcode() == Opcodes.ALOAD) {
+                                                                            offsetClickHeldItem++;
+                                                                            if (m.instructions.get(offsetClickHeldItem).getOpcode() == Opcodes.ALOAD) {
+                                                                                offsetClickHeldItem++;
+                                                                                if (m.instructions.get(offsetClickHeldItem).getOpcode() == Opcodes.INVOKEVIRTUAL
+                                                                                        && ((MethodInsnNode) m.instructions.get(offsetClickHeldItem)).name.equals(GetObfuscationValue("GetItemStack", obfuscated))) {
+                                                                                    offsetClickHeldItem++;
+                                                                                    if (m.instructions.get(offsetClickHeldItem).getOpcode() == Opcodes.INVOKEVIRTUAL
+                                                                                            && ((MethodInsnNode) m.instructions.get(offsetClickHeldItem)).name.equals(GetObfuscationValue("OnPickupFromSlot", obfuscated))) {
+                                                                                        System.out.println("[DbStatsCore] Patching 3");
+                                                                                        InsnList toInject = new InsnList();
+                                                                                        toInject.add(new VarInsnNode(25, 7));    //ALOAD 7 -> Slot2
+                                                                                        toInject.add(new VarInsnNode(25, 4));    //ALOAD 4 -> par4EntityPlayer
+                                                                                        toInject.add(new VarInsnNode(25, 0));    //ALOAD 0 -> this (container)
+                                                                                        toInject.add(new FieldInsnNode(180, GetObfuscationValue("ContainerJavaClass", obfuscated), GetObfuscationValue("InventoryItemStacksField", obfuscated),
+                                                                                                "Ljava/util/List;"));    //(GETFIELD, "net/minecraft/inventory/Container", "inventoryItemStacks", "Ljava/util/List;");
+                                                                                        toInject.add(new VarInsnNode(21, 1));    //Iload 1 -> par1
+                                                                                        toInject.add(new MethodInsnNode(185, "java/util/List", "get", "(I)Ljava/lang/Object;"));    //INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;");
+                                                                                        toInject.add(new TypeInsnNode(192, GetObfuscationValue("ItemStackJavaClass", obfuscated)));    //mv.visitTypeInsn(CHECKCAST, "net/minecraft/item/ItemStack");
+                                                                                        toInject.add(new MethodInsnNode(184, "dbStatsCore/ASM/DbStatsEventFactory", "onPickupFromSlot", "(L" + GetObfuscationValue("SlotJavaClass", obfuscated)
+                                                                                                + ";L" + GetObfuscationValue("EntityPlayerJavaClass", obfuscated) + ";L" + GetObfuscationValue("ItemStackJavaClass", obfuscated) + ";)Z"));
+                                                                                        toInject.add(new InsnNode(87));    //Pop stack
+
+                                                                                        m.instructions.insert(m.instructions.get(offsetClickHeldItem), toInject);
+                                                                                        break;
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                break;
+            }
+        }
 
 		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
 		classNode.accept(writer);
@@ -402,143 +366,118 @@ public class DSClassTransformer implements IClassTransformer {
 		
 		boolean bothDone = false;
 
-		Iterator<MethodNode> methods = classNode.methods.iterator();
-		while (methods.hasNext()) {
-			MethodNode m = methods.next();
+        for (MethodNode m : classNode.methods) {
+            if (m.name.equals(GetObfuscationValue("BlockBreak", obfuscated)) && m.desc.equals("(III)Z")) {
+                System.out.println("[DbStatsCore] Patching 1");
 
-			if (m.name.equals(GetObfuscationValue("BlockBreak", obfuscated)) && m.desc.equals("(III)Z")) {
-				System.out.println("[DbStatsCore] Patching 1");
-				
-				int offset = 1;
-				while (m.instructions.get(offset).getOpcode() != 198)//IFNULL
-				{
-					offset++;
-				}
-				while (m.instructions.get(offset).getOpcode() != 182)//ALOAD
-				{
-					offset++;
-				}
-				offset+=2;
-				
-				int tempOffset = offset;
-				for (int i = tempOffset; i < m.instructions.size(); i++)
-				{
-					if (m.instructions.get(i).getOpcode() == 184 && ((MethodInsnNode)m.instructions.get(i)).name.equals("onBlockBreak"))
-					{
-						System.out.println("[DbStatsCore] ItemInWorldManager blockBreak already Patched!");
-						if (bothDone)
-						{
-							break;
-						}
-						else
-						{
-							bothDone = true;
-						}
-					}
-				}
-				
-				System.out.println("[DbStatsCore] Patching 1.1");
-				
-				InsnList toInject = new InsnList();
-				
-				toInject.add(new VarInsnNode(25, 0));
-				toInject.add(new FieldInsnNode(180, GetObfuscationValue("ItemInWorldManagerJavaClass", obfuscated),
-						GetObfuscationValue("WorldField", obfuscated), "L" + GetObfuscationValue("WorldJavaClass", obfuscated) + ";"));
-				toInject.add(new VarInsnNode(21, 1));
-				toInject.add(new VarInsnNode(21, 2));
-				toInject.add(new VarInsnNode(21, 3));
-				toInject.add(new VarInsnNode(25, 4));
-				toInject.add(new VarInsnNode(21, 5));
-				toInject.add(new VarInsnNode(25, 0));
-				toInject.add(new FieldInsnNode(180, GetObfuscationValue("ItemInWorldManagerJavaClass", obfuscated),
-						GetObfuscationValue("EntityPlayerField", obfuscated), "L" + GetObfuscationValue("EntityPlayerMPJavaClass", obfuscated) + ";"));
-				toInject.add(new MethodInsnNode(184, "dbStatsCore/ASM/DbStatsEventFactory", "onBlockBreak", "(L" + GetObfuscationValue("WorldJavaClass", obfuscated) + ";IIIL"
-						+ GetObfuscationValue("BlockJavaClass", obfuscated) + ";IL" + GetObfuscationValue("EntityPlayerJavaClass", obfuscated) + ";)Z"));
+                int offset = 1;
+                while (m.instructions.get(offset).getOpcode() != 198)//IFNULL
+                {
+                    offset++;
+                }
+                while (m.instructions.get(offset).getOpcode() != 182)//ALOAD
+                {
+                    offset++;
+                }
+                offset += 2;
 
-				m.instructions.insertBefore(m.instructions.get(offset), toInject);
+                int tempOffset = offset;
+                for (int i = tempOffset; i < m.instructions.size(); i++) {
+                    if (m.instructions.get(i).getOpcode() == 184 && ((MethodInsnNode) m.instructions.get(i)).name.equals("onBlockBreak")) {
+                        System.out.println("[DbStatsCore] ItemInWorldManager blockBreak already Patched!");
+                        if (bothDone) {
+                            break;
+                        } else {
+                            bothDone = true;
+                        }
+                    }
+                }
+
+                System.out.println("[DbStatsCore] Patching 1.1");
+
+                InsnList toInject = new InsnList();
+
+                toInject.add(new VarInsnNode(25, 0));
+                toInject.add(new FieldInsnNode(180, GetObfuscationValue("ItemInWorldManagerJavaClass", obfuscated),
+                        GetObfuscationValue("WorldField", obfuscated), "L" + GetObfuscationValue("WorldJavaClass", obfuscated) + ";"));
+                toInject.add(new VarInsnNode(21, 1));
+                toInject.add(new VarInsnNode(21, 2));
+                toInject.add(new VarInsnNode(21, 3));
+                toInject.add(new VarInsnNode(25, 4));
+                toInject.add(new VarInsnNode(21, 5));
+                toInject.add(new VarInsnNode(25, 0));
+                toInject.add(new FieldInsnNode(180, GetObfuscationValue("ItemInWorldManagerJavaClass", obfuscated),
+                        GetObfuscationValue("EntityPlayerField", obfuscated), "L" + GetObfuscationValue("EntityPlayerMPJavaClass", obfuscated) + ";"));
+                toInject.add(new MethodInsnNode(184, "dbStatsCore/ASM/DbStatsEventFactory", "onBlockBreak", "(L" + GetObfuscationValue("WorldJavaClass", obfuscated) + ";IIIL"
+                        + GetObfuscationValue("BlockJavaClass", obfuscated) + ";IL" + GetObfuscationValue("EntityPlayerJavaClass", obfuscated) + ";)Z"));
+
+                m.instructions.insertBefore(m.instructions.get(offset), toInject);
 //				System.out.println("[DbStatsCore] Patching ItemInWorldManager blockBreak Complete!");
-				if (bothDone)
-				{
-					break;
-				}
-				else
-				{
-					bothDone = true;
-				}
-			}
-			else if (m.name.equals(GetObfuscationValue("ActivateBlockOrUseItem", obfuscated)) && m.desc.equals("(L" + GetObfuscationValue("EntityPlayerJavaClass", obfuscated) + ";L" + GetObfuscationValue("WorldJavaClass", obfuscated) + ";L"
-					+ GetObfuscationValue("ItemStackJavaClass", obfuscated) + ";IIIIFFF)Z")) {
-				System.out.println("[DbStatsCore] Patching 2");
-				
-				int offset = 1;
-				for(offset = 1; offset < m.instructions.size(); offset++)
-				{
-					if (m.instructions.get(offset).getOpcode() == 182 && ((MethodInsnNode)m.instructions.get(offset)).name.equals(GetObfuscationValue("BlockPlace", obfuscated)))	//INVOKEVIRTUAL "tryPlaceItemIntoWorld"
-					{
-						System.out.println("[DbStatsCore] Patching 2.1");
-						break;
-					}
-				}
-				offset++;	//ISTORE
-				
-				if (offset >= m.instructions.size())
-				{
-					System.out.println("[DbStatsCore] Error in ItemInWorldManager, Failed on blockPlace patch!");
-					break;
-				}
-				
-				int tempOffset = offset;
-				for (int i = tempOffset; i < m.instructions.size(); i++)
-				{
-					if (m.instructions.get(i).getOpcode() == 184 && ((MethodInsnNode)m.instructions.get(i)).name.equals("onBlockPlace"))
-					{
-						System.out.println("[DbStatsCore] ItemInWorldManager blockPlace already Patched!");
-						if (bothDone)
-						{
-							break;
-						}
-						else
-						{
-							bothDone = true;
-						}
-					}
-				}
-				
-				System.out.println("[DbStatsCore] Patching 2.2");
-					
-				InsnList toInject = new InsnList();
-				toInject.add(new VarInsnNode(25, 2));
-				toInject.add(new VarInsnNode(21, 4));
-				toInject.add(new VarInsnNode(21, 5));
-				toInject.add(new VarInsnNode(21, 6));
-				toInject.add(new VarInsnNode(25, 1));
-				toInject.add(new VarInsnNode(25, 3));
-				
-				//No Idea why this is?? The locals stack is different when obfuscated?
-				if (obfuscated)
-				{
-					toInject.add(new VarInsnNode(21, 13));
-				}
-				else
-				{
-					toInject.add(new VarInsnNode(21, 15));
-				}
-				toInject.add(new MethodInsnNode(184, "dbStatsCore/ASM/DbStatsEventFactory", "onBlockPlace", "(L" + GetObfuscationValue("WorldJavaClass", obfuscated)
-						+ ";IIIL" + GetObfuscationValue("EntityPlayerJavaClass", obfuscated) + ";L" + GetObfuscationValue("ItemStackJavaClass", obfuscated) + ";Z)Z"));
-				toInject.add(new InsnNode(87));	//POP stack
-				
-				m.instructions.insert(m.instructions.get(offset), toInject);
-				//System.out.println("[DbStatsCore] Patching ItemInWorldManager blockPlace Complete!" + Integer.toString(offset));
-				if (bothDone)
-				{
-					break;
-				}
-				else
-				{
-					bothDone = true;
-				}
-			}
-		}
+                if (bothDone) {
+                    break;
+                } else {
+                    bothDone = true;
+                }
+            } else if (m.name.equals(GetObfuscationValue("ActivateBlockOrUseItem", obfuscated)) && m.desc.equals("(L" + GetObfuscationValue("EntityPlayerJavaClass", obfuscated) + ";L" + GetObfuscationValue("WorldJavaClass", obfuscated) + ";L"
+                    + GetObfuscationValue("ItemStackJavaClass", obfuscated) + ";IIIIFFF)Z")) {
+                System.out.println("[DbStatsCore] Patching 2");
+
+                int offset;
+                for (offset = 1; offset < m.instructions.size(); offset++) {
+                    if (m.instructions.get(offset).getOpcode() == 182 && ((MethodInsnNode) m.instructions.get(offset)).name.equals(GetObfuscationValue("BlockPlace", obfuscated)))    //INVOKEVIRTUAL "tryPlaceItemIntoWorld"
+                    {
+                        System.out.println("[DbStatsCore] Patching 2.1");
+                        break;
+                    }
+                }
+                offset++;    //ISTORE
+
+                if (offset >= m.instructions.size()) {
+                    System.out.println("[DbStatsCore] Error in ItemInWorldManager, Failed on blockPlace patch!");
+                    break;
+                }
+
+                int tempOffset = offset;
+                for (int i = tempOffset; i < m.instructions.size(); i++) {
+                    if (m.instructions.get(i).getOpcode() == 184 && ((MethodInsnNode) m.instructions.get(i)).name.equals("onBlockPlace")) {
+                        System.out.println("[DbStatsCore] ItemInWorldManager blockPlace already Patched!");
+                        if (bothDone) {
+                            break;
+                        } else {
+                            bothDone = true;
+                        }
+                    }
+                }
+
+                System.out.println("[DbStatsCore] Patching 2.2");
+
+                InsnList toInject = new InsnList();
+                toInject.add(new VarInsnNode(25, 2));
+                toInject.add(new VarInsnNode(21, 4));
+                toInject.add(new VarInsnNode(21, 5));
+                toInject.add(new VarInsnNode(21, 6));
+                toInject.add(new VarInsnNode(25, 1));
+                toInject.add(new VarInsnNode(25, 3));
+
+                //No Idea why this is?? The locals stack is different when obfuscated?
+                if (obfuscated) {
+                    toInject.add(new VarInsnNode(21, 13));
+                } else {
+                    toInject.add(new VarInsnNode(21, 15));
+                }
+                toInject.add(new MethodInsnNode(184, "dbStatsCore/ASM/DbStatsEventFactory", "onBlockPlace", "(L" + GetObfuscationValue("WorldJavaClass", obfuscated)
+                        + ";IIIL" + GetObfuscationValue("EntityPlayerJavaClass", obfuscated) + ";L" + GetObfuscationValue("ItemStackJavaClass", obfuscated) + ";Z)Z"));
+                toInject.add(new InsnNode(87));    //POP stack
+
+                m.instructions.insert(m.instructions.get(offset), toInject);
+                //System.out.println("[DbStatsCore] Patching ItemInWorldManager blockPlace Complete!" + Integer.toString(offset));
+                if (bothDone) {
+                    break;
+                } else {
+                    bothDone = true;
+                }
+            }
+        }
 
 		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
 		classNode.accept(writer);
