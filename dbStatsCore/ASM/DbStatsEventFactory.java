@@ -39,6 +39,7 @@ public class DbStatsEventFactory {
 	
 	public static boolean onPickupFromSlot(Slot slot, EntityPlayer player, ItemStack item)
 	{
+        //TODO : Add object that made the call (this) to here (Allows for better mod integration... looking at you Forestry!)
 		PickupFromSlot ev = new PickupFromSlot(slot, player, item);
 		MinecraftForge.EVENT_BUS.post(ev);
 		return !ev.isCanceled();
