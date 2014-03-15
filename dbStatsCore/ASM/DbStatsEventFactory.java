@@ -2,6 +2,7 @@ package dbStatsCore.ASM;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
@@ -37,10 +38,9 @@ public class DbStatsEventFactory {
 		return !ev.isCanceled();
 	}
 	
-	public static boolean onPickupFromSlot(Slot slot, EntityPlayer player, ItemStack item)
+	public static boolean onPickupFromSlot(int clickMethod, Slot slot, EntityPlayer player, ItemStack item, Container container)
 	{
-        //TODO : Add object that made the call (this) to here (Allows for better mod integration... looking at you Forestry!)
-		PickupFromSlot ev = new PickupFromSlot(slot, player, item);
+		PickupFromSlot ev = new PickupFromSlot(slot, player, item, container, clickMethod);
 		MinecraftForge.EVENT_BUS.post(ev);
 		return !ev.isCanceled();
 	}

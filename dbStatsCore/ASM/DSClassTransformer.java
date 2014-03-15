@@ -3,6 +3,7 @@ package dbStatsCore.ASM;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import ch.epfl.lamp.compiler.msil.emit.OpCodes;
 import net.minecraft.launchwrapper.IClassTransformer;
 
 import org.objectweb.asm.ClassReader;
@@ -169,6 +170,7 @@ public class DSClassTransformer implements IClassTransformer {
                                         if (m.instructions.get(offset + 5).getOpcode() == Opcodes.IFEQ) {
                                             System.out.println("[DbStatsCore] Patching 1");
                                             InsnList toInject = new InsnList();
+                                            toInject.add(new InsnNode(Opcodes.ICONST_0));
                                             toInject.add(new VarInsnNode(25, 7));    //ALOAD 7 -> Slot2
                                             toInject.add(new VarInsnNode(25, 4));    //ALOAD 4 -> par4EntityPlayer
                                             toInject.add(new VarInsnNode(25, 0));    //ALOAD 0 -> this (container)
@@ -177,8 +179,9 @@ public class DSClassTransformer implements IClassTransformer {
                                             toInject.add(new VarInsnNode(21, 1));    //Iload 1 -> par1
                                             toInject.add(new MethodInsnNode(185, "java/util/List", "get", "(I)Ljava/lang/Object;"));    //INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;");
                                             toInject.add(new TypeInsnNode(192, GetObfuscationValue("ItemStackJavaClass", obfuscated)));    //mv.visitTypeInsn(CHECKCAST, "net/minecraft/item/ItemStack");
-                                            toInject.add(new MethodInsnNode(184, "dbStatsCore/ASM/DbStatsEventFactory", "onPickupFromSlot", "(L" + GetObfuscationValue("SlotJavaClass", obfuscated)
-                                                    + ";L" + GetObfuscationValue("EntityPlayerJavaClass", obfuscated) + ";L" + GetObfuscationValue("ItemStackJavaClass", obfuscated) + ";)Z"));
+                                            toInject.add(new VarInsnNode(25, 0));
+                                            toInject.add(new MethodInsnNode(184, "dbStatsCore/ASM/DbStatsEventFactory", "onPickupFromSlot", "(IL" + GetObfuscationValue("SlotJavaClass", obfuscated)
+                                                    + ";L" + GetObfuscationValue("EntityPlayerJavaClass", obfuscated) + ";L" + GetObfuscationValue("ItemStackJavaClass", obfuscated) + ";L" + GetObfuscationValue("ContainerJavaClass", obfuscated) + ";)Z"));
                                             toInject.add(new InsnNode(87));    //Pop stack
 
                                             m.instructions.insert(m.instructions.get(offset + 5), toInject);
@@ -213,6 +216,7 @@ public class DSClassTransformer implements IClassTransformer {
                                                                         && ((MethodInsnNode) m.instructions.get(offsetClickEmptyHand)).name.equals(GetObfuscationValue("OnPickupFromSlot", obfuscated))) {
                                                                     System.out.println("[DbStatsCore] Patching 2");
                                                                     InsnList toInject = new InsnList();
+                                                                    toInject.add(new InsnNode(Opcodes.ICONST_1));
                                                                     toInject.add(new VarInsnNode(25, 7));    //ALOAD 7 -> Slot2
                                                                     toInject.add(new VarInsnNode(25, 4));    //ALOAD 4 -> par4EntityPlayer
                                                                     toInject.add(new VarInsnNode(25, 0));    //ALOAD 0 -> this (container)
@@ -221,8 +225,9 @@ public class DSClassTransformer implements IClassTransformer {
                                                                     toInject.add(new VarInsnNode(21, 1));    //Iload 1 -> par1
                                                                     toInject.add(new MethodInsnNode(185, "java/util/List", "get", "(I)Ljava/lang/Object;"));    //INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;");
                                                                     toInject.add(new TypeInsnNode(192, GetObfuscationValue("ItemStackJavaClass", obfuscated)));    //mv.visitTypeInsn(CHECKCAST, "net/minecraft/item/ItemStack");
-                                                                    toInject.add(new MethodInsnNode(184, "dbStatsCore/ASM/DbStatsEventFactory", "onPickupFromSlot", "(L" + GetObfuscationValue("SlotJavaClass", obfuscated)
-                                                                            + ";L" + GetObfuscationValue("EntityPlayerJavaClass", obfuscated) + ";L" + GetObfuscationValue("ItemStackJavaClass", obfuscated) + ";)Z"));
+                                                                    toInject.add(new VarInsnNode(25, 0));
+                                                                    toInject.add(new MethodInsnNode(184, "dbStatsCore/ASM/DbStatsEventFactory", "onPickupFromSlot", "(IL" + GetObfuscationValue("SlotJavaClass", obfuscated)
+                                                                            + ";L" + GetObfuscationValue("EntityPlayerJavaClass", obfuscated) + ";L" + GetObfuscationValue("ItemStackJavaClass", obfuscated) + ";L" + GetObfuscationValue("ContainerJavaClass", obfuscated) + ";)Z"));
                                                                     toInject.add(new InsnNode(87));    //Pop stack
 
                                                                     m.instructions.insert(m.instructions.get(offsetClickEmptyHand), toInject);
@@ -268,6 +273,7 @@ public class DSClassTransformer implements IClassTransformer {
                                                                                             && ((MethodInsnNode) m.instructions.get(offsetClickHeldItem)).name.equals(GetObfuscationValue("OnPickupFromSlot", obfuscated))) {
                                                                                         System.out.println("[DbStatsCore] Patching 3");
                                                                                         InsnList toInject = new InsnList();
+                                                                                        toInject.add(new InsnNode(Opcodes.ICONST_2));
                                                                                         toInject.add(new VarInsnNode(25, 7));    //ALOAD 7 -> Slot2
                                                                                         toInject.add(new VarInsnNode(25, 4));    //ALOAD 4 -> par4EntityPlayer
                                                                                         toInject.add(new VarInsnNode(25, 0));    //ALOAD 0 -> this (container)
@@ -276,8 +282,9 @@ public class DSClassTransformer implements IClassTransformer {
                                                                                         toInject.add(new VarInsnNode(21, 1));    //Iload 1 -> par1
                                                                                         toInject.add(new MethodInsnNode(185, "java/util/List", "get", "(I)Ljava/lang/Object;"));    //INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;");
                                                                                         toInject.add(new TypeInsnNode(192, GetObfuscationValue("ItemStackJavaClass", obfuscated)));    //mv.visitTypeInsn(CHECKCAST, "net/minecraft/item/ItemStack");
-                                                                                        toInject.add(new MethodInsnNode(184, "dbStatsCore/ASM/DbStatsEventFactory", "onPickupFromSlot", "(L" + GetObfuscationValue("SlotJavaClass", obfuscated)
-                                                                                                + ";L" + GetObfuscationValue("EntityPlayerJavaClass", obfuscated) + ";L" + GetObfuscationValue("ItemStackJavaClass", obfuscated) + ";)Z"));
+                                                                                        toInject.add(new VarInsnNode(25, 0));
+                                                                                        toInject.add(new MethodInsnNode(184, "dbStatsCore/ASM/DbStatsEventFactory", "onPickupFromSlot", "(IL" + GetObfuscationValue("SlotJavaClass", obfuscated)
+                                                                                                + ";L" + GetObfuscationValue("EntityPlayerJavaClass", obfuscated) + ";L" + GetObfuscationValue("ItemStackJavaClass", obfuscated) + ";L" + GetObfuscationValue("ContainerJavaClass", obfuscated) + ";)Z"));
                                                                                         toInject.add(new InsnNode(87));    //Pop stack
 
                                                                                         m.instructions.insert(m.instructions.get(offsetClickHeldItem), toInject);
