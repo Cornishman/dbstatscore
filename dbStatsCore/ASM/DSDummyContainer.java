@@ -20,7 +20,7 @@ public class DSDummyContainer extends DummyModContainer {
             ModMetadata meta = getMetadata();
             meta.modId = "DbStatsCore";
             meta.name = "DbStatsCore";
-            meta.version = "0.0.1";
+            meta.version = "0.1.0";
             meta.credits = "";
             meta.authorList = Arrays.asList("wattzy");
             meta.description = "";
