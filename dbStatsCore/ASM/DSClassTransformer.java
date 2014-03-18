@@ -378,105 +378,114 @@ public class DSClassTransformer implements IClassTransformer {
                 System.out.println("[DbStatsCore] Patching 1");
 
                 int offset = 1;
-                while (m.instructions.get(offset).getOpcode() != 198)//IFNULL
+                while (m.instructions.get(offset).getOpcode() != Opcodes.IFNULL)//IFNULL
                 {
                     offset++;
                 }
-                while (m.instructions.get(offset).getOpcode() != 182)//ALOAD
+                while (m.instructions.get(offset).getOpcode() != Opcodes.ALOAD)//ALOAD
                 {
                     offset++;
                 }
-                offset += 2;
-
-                int tempOffset = offset;
-                for (int i = tempOffset; i < m.instructions.size(); i++) {
-                    if (m.instructions.get(i).getOpcode() == 184 && ((MethodInsnNode) m.instructions.get(i)).name.equals("onBlockBreak")) {
-                        System.out.println("[DbStatsCore] ItemInWorldManager blockBreak already Patched!");
-                        if (bothDone) {
-                            break;
-                        } else {
-                            bothDone = true;
-                        }
-                    }
+                while (m.instructions.get(offset).getOpcode() != Opcodes.INVOKEVIRTUAL)
+                {
+                    offset++;
                 }
+//                offset += 2;
 
-                System.out.println("[DbStatsCore] Patching 1.1");
+//                int tempOffset = offset;
+//                for (int i = tempOffset; i < m.instructions.size(); i++) {
+//                    if (m.instructions.get(i).getOpcode() == 184 && ((MethodInsnNode) m.instructions.get(i)).name.equals("onBlockBreak")) {
+//                        System.out.println("[DbStatsCore] ItemInWorldManager blockBreak already Patched!");
+//                        if (bothDone) {
+//                            break;
+//                        } else {
+//                            bothDone = true;
+//                        }
+//                    }
+//                }
+
+//                System.out.println("[DbStatsCore] Patching 1.1");
 
                 InsnList toInject = new InsnList();
 
-                toInject.add(new VarInsnNode(25, 0));
-                toInject.add(new FieldInsnNode(180, GetObfuscationValue("ItemInWorldManagerJavaClass", obfuscated),
+                toInject.add(new VarInsnNode(Opcodes.ALOAD, 0));
+                toInject.add(new FieldInsnNode(Opcodes.GETFIELD, GetObfuscationValue("ItemInWorldManagerJavaClass", obfuscated),
                         GetObfuscationValue("WorldField", obfuscated), "L" + GetObfuscationValue("WorldJavaClass", obfuscated) + ";"));
-                toInject.add(new VarInsnNode(21, 1));
-                toInject.add(new VarInsnNode(21, 2));
-                toInject.add(new VarInsnNode(21, 3));
-                toInject.add(new VarInsnNode(25, 4));
-                toInject.add(new VarInsnNode(21, 5));
-                toInject.add(new VarInsnNode(25, 0));
-                toInject.add(new FieldInsnNode(180, GetObfuscationValue("ItemInWorldManagerJavaClass", obfuscated),
+                toInject.add(new VarInsnNode(Opcodes.ILOAD, 1));
+                toInject.add(new VarInsnNode(Opcodes.ILOAD, 2));
+                toInject.add(new VarInsnNode(Opcodes.ILOAD, 3));
+                toInject.add(new VarInsnNode(Opcodes.ALOAD, 4));
+                toInject.add(new VarInsnNode(Opcodes.ILOAD, 5));
+                toInject.add(new VarInsnNode(Opcodes.ALOAD, 0));
+                toInject.add(new FieldInsnNode(Opcodes.GETFIELD, GetObfuscationValue("ItemInWorldManagerJavaClass", obfuscated),
                         GetObfuscationValue("EntityPlayerField", obfuscated), "L" + GetObfuscationValue("EntityPlayerMPJavaClass", obfuscated) + ";"));
-                toInject.add(new MethodInsnNode(184, "dbStatsCore/ASM/DbStatsEventFactory", "onBlockBreak", "(L" + GetObfuscationValue("WorldJavaClass", obfuscated) + ";IIIL"
+                toInject.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "dbStatsCore/ASM/DbStatsEventFactory", "onBlockBreak", "(L" + GetObfuscationValue("WorldJavaClass", obfuscated) + ";IIIL"
                         + GetObfuscationValue("BlockJavaClass", obfuscated) + ";IL" + GetObfuscationValue("EntityPlayerJavaClass", obfuscated) + ";)Z"));
+                toInject.add(new InsnNode(Opcodes.POP));
 
-                m.instructions.insertBefore(m.instructions.get(offset), toInject);
+                m.instructions.insert(m.instructions.get(offset), toInject);
 //				System.out.println("[DbStatsCore] Patching ItemInWorldManager blockBreak Complete!");
-                if (bothDone) {
-                    break;
-                } else {
-                    bothDone = true;
-                }
+//                if (bothDone) {
+//                    break;
+//                } else {
+//                    bothDone = true;
+//                }
             } else if (m.name.equals(GetObfuscationValue("ActivateBlockOrUseItem", obfuscated)) && m.desc.equals("(L" + GetObfuscationValue("EntityPlayerJavaClass", obfuscated) + ";L" + GetObfuscationValue("WorldJavaClass", obfuscated) + ";L"
                     + GetObfuscationValue("ItemStackJavaClass", obfuscated) + ";IIIIFFF)Z")) {
-                System.out.println("[DbStatsCore] Patching 2");
+//                System.out.println("[DbStatsCore] Patching 2");
 
                 int offset;
                 for (offset = 1; offset < m.instructions.size(); offset++) {
-                    if (m.instructions.get(offset).getOpcode() == 182 && ((MethodInsnNode) m.instructions.get(offset)).name.equals(GetObfuscationValue("BlockPlace", obfuscated)))    //INVOKEVIRTUAL "tryPlaceItemIntoWorld"
+                    if (m.instructions.get(offset).getOpcode() == Opcodes.INVOKEVIRTUAL
+                            && ((MethodInsnNode) m.instructions.get(offset)).name.equals(GetObfuscationValue("BlockPlace", obfuscated))
+                            && m.instructions.get(offset + 1).getOpcode() == Opcodes.ISTORE
+                            && m.instructions.get(offset + 4).getOpcode() == Opcodes.ALOAD)    //INVOKEVIRTUAL "tryPlaceItemIntoWorld"
                     {
-                        System.out.println("[DbStatsCore] Patching 2.1");
+                        System.out.println("[DbStatsCore] Patching 2");
+                        offset += 4;
                         break;
                     }
                 }
-                offset++;    //ISTORE
+//                offset++;    //ISTORE
 
-                if (offset >= m.instructions.size()) {
-                    System.out.println("[DbStatsCore] Error in ItemInWorldManager, Failed on blockPlace patch!");
-                    break;
-                }
+//                if (offset >= m.instructions.size()) {
+//                    System.out.println("[DbStatsCore] Error in ItemInWorldManager, Failed on blockPlace patch!");
+//                    break;
+//                }
+//
+//                int tempOffset = offset;
+//                for (int i = tempOffset; i < m.instructions.size(); i++) {
+//                    if (m.instructions.get(i).getOpcode() == 184 && ((MethodInsnNode) m.instructions.get(i)).name.equals("onBlockPlace")) {
+//                        System.out.println("[DbStatsCore] ItemInWorldManager blockPlace already Patched!");
+//                        if (bothDone) {
+//                            break;
+//                        } else {
+//                            bothDone = true;
+//                        }
+//                    }
+//                }
 
-                int tempOffset = offset;
-                for (int i = tempOffset; i < m.instructions.size(); i++) {
-                    if (m.instructions.get(i).getOpcode() == 184 && ((MethodInsnNode) m.instructions.get(i)).name.equals("onBlockPlace")) {
-                        System.out.println("[DbStatsCore] ItemInWorldManager blockPlace already Patched!");
-                        if (bothDone) {
-                            break;
-                        } else {
-                            bothDone = true;
-                        }
-                    }
-                }
-
-                System.out.println("[DbStatsCore] Patching 2.2");
+//                System.out.println("[DbStatsCore] Patching 2.2");
 
                 InsnList toInject = new InsnList();
-                toInject.add(new VarInsnNode(25, 2));
-                toInject.add(new VarInsnNode(21, 4));
-                toInject.add(new VarInsnNode(21, 5));
-                toInject.add(new VarInsnNode(21, 6));
-                toInject.add(new VarInsnNode(25, 1));
-                toInject.add(new VarInsnNode(25, 3));
+                toInject.add(new VarInsnNode(Opcodes.ALOAD, 2));
+                toInject.add(new VarInsnNode(Opcodes.ILOAD, 4));
+                toInject.add(new VarInsnNode(Opcodes.ILOAD, 5));
+                toInject.add(new VarInsnNode(Opcodes.ILOAD, 6));
+                toInject.add(new VarInsnNode(Opcodes.ALOAD, 1));
+                toInject.add(new VarInsnNode(Opcodes.ALOAD, 3));
 
                 //No Idea why this is?? The locals stack is different when obfuscated?
-                if (obfuscated) {
-                    toInject.add(new VarInsnNode(21, 13));
-                } else {
-                    toInject.add(new VarInsnNode(21, 15));
-                }
-                toInject.add(new MethodInsnNode(184, "dbStatsCore/ASM/DbStatsEventFactory", "onBlockPlace", "(L" + GetObfuscationValue("WorldJavaClass", obfuscated)
+//                if (obfuscated) {
+//                    toInject.add(new VarInsnNode(Opcodes.ILOAD, 13));
+//                } else {
+                    toInject.add(new VarInsnNode(Opcodes.ILOAD, 15));
+//                }
+                toInject.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "dbStatsCore/ASM/DbStatsEventFactory", "onBlockPlace", "(L" + GetObfuscationValue("WorldJavaClass", obfuscated)
                         + ";IIIL" + GetObfuscationValue("EntityPlayerJavaClass", obfuscated) + ";L" + GetObfuscationValue("ItemStackJavaClass", obfuscated) + ";Z)Z"));
-                toInject.add(new InsnNode(87));    //POP stack
+                toInject.add(new InsnNode(Opcodes.POP));    //POP stack
 
-                m.instructions.insert(m.instructions.get(offset), toInject);
+                m.instructions.insertBefore(m.instructions.get(offset), toInject);
                 //System.out.println("[DbStatsCore] Patching ItemInWorldManager blockPlace Complete!" + Integer.toString(offset));
                 if (bothDone) {
                     break;
