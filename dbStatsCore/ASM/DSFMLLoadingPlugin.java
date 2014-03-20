@@ -1,8 +1,8 @@
 package dbStatsCore.ASM;
 
-import java.util.Map;
-
 import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
+
+import java.util.Map;
 
 public class DSFMLLoadingPlugin implements IFMLLoadingPlugin {
 

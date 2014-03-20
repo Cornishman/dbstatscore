@@ -1,5 +1,9 @@
 package dbStatsCore.ASM;
 
+import dbStats.API.Events.ItemCrafted;
+import dbStats.API.Events.PickupFromSlot;
+import dbStats.API.Events.PlayerBlockBreak;
+import dbStats.API.Events.PlayerBlockPlace;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -7,10 +11,6 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
-import dbStats.API.Events.ItemCrafted;
-import dbStats.API.Events.PickupFromSlot;
-import dbStats.API.Events.PlayerBlockBreak;
-import dbStats.API.Events.PlayerBlockPlace;
 
 public class DbStatsEventFactory {
 
