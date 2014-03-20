@@ -12,8 +12,10 @@ public abstract class Statistic {
 	public final boolean updateStat;
 	public final boolean usePlayerId;
 	public final boolean insertsAllColumns;
+    public final int priority;
+    public final int uidHash;
 	
-	public Statistic(String key, String table, String column, String player, boolean addtocurr, boolean insert, boolean update, boolean usePlayerid, boolean insertAllColumns)
+	public Statistic(int hash, int priority, String key, String table, String column, String player, boolean addtocurr, boolean insert, boolean update, boolean usePlayerid, boolean insertAllColumns)
 	{
 		this.key = key;
 		this.playerName = player;
@@ -25,6 +27,9 @@ public abstract class Statistic {
 		this.updateStat = update;
 		this.usePlayerId = usePlayerid;
 		this.insertsAllColumns = insertAllColumns;
+
+        this.priority = priority;
+        this.uidHash = hash;
 	}
 	
 	public abstract boolean Combine(Statistic stat);
